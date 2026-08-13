@@ -1,0 +1,24 @@
+{
+  "name": "fullstackopen_part8",
+  "version": "1.0.0",
+  "description": "Proyecto parte 8 FullStackOpen",
+  "homepage": "https://github.com/antoniofdezflambo/FullStackOpen_Part8#readme",
+  "bugs": {
+    "url": "https://github.com/antoniofdezflambo/FullStackOpen_Part8/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoniofdezflambo/FullStackOpen_Part8.git"
+  },
+  "license": "ISC",
+  "author": "antonio",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.5.1",
+    "graphql": "^16.14.2"
+  }
+}
