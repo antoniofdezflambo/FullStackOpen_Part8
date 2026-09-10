@@ -83,12 +83,15 @@ const resolvers = {
     authorCount: async () => await Author.countDocuments(),
     allBooks: async (root, args) => {
       const filter = {}
-      // if (args.author) {
-      //   return books.filter(book => book.author === args.author)
-      // }
-      // if (args.genre) {
-      //   return books.filter(book => book.genres.includes(args.genre))
-      // }
+      if (args.author) {
+        const author = await Author.findOne({ name: args.author })
+        if (author) {
+          return Book.find({ author: author._id })
+        }
+      }
+      if (args.genre) {
+        return Book.find({ genres: { $in: [args.genre] } })
+      }
       return Book.find(filter)
     },
     allAuthors: async () => Author.find({}),
@@ -103,7 +106,7 @@ const resolvers = {
         try {
           await author.save()    
         } catch (error) {
-          throw new GraphQLError('Saving author failed', {
+          throw new GraphQLError('Saving author failed. Name too short', {
             extensions: {
               code: 'BAD_USER_INPUT',
               invalidArgs: args.author,
@@ -118,7 +121,7 @@ const resolvers = {
       try {
         await book.save()
       } catch (error) {
-        throw new GraphQLError('Saving book failed', {
+        throw new GraphQLError('Saving book failed. Title too short', {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.title,
@@ -129,16 +132,16 @@ const resolvers = {
 
       return book
     },
-    // editAuthor: (root, args) => {
-    //   const author = authors.find(author => author.name === args.name)
-    //   if (!author) {
-    //     return null
-    //   }
+    editAuthor: async (root, args) => {
+      const author = await Author.findOne({ name: args.author })
+      if (!author) {
+        return null
+      }
 
-    //   const updatedAuthor = { ...author, born: args.setBornTo }
-    //   authors = authors.map(a => a.name === args.name ? updatedAuthor : a)
-    //   return updatedAuthor
-    // }
+      const updatedAuthor = { ...author, born: args.setBornTo }
+      await Author.findByIdAndUpdate(author._id, updatedAuthor)
+      return updatedAuthor
+    }
   }
 }
 
