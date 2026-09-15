@@ -9,11 +9,20 @@ const Birthyear = () => {
   const [born, setBorn] = useState('')
 
   const [addBirthyear] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => {
       const errors = error.graphQLErrors[0].extensions.error.errors
       const messages = Object.values(errors).map(e => e.message).join('\n')
       console.log(messages)
+    },
+    update: (cache, response) => {
+      cache.updateQuery({ query: ALL_AUTHORS }, ({ allAuthors }) => {
+        const updatedAuthor = response.data.editAuthor
+        return {
+          allAuthors: allAuthors.map(a =>
+            a.name === updatedAuthor.name ? updatedAuthor : a
+          )
+        }
+      })
     }
   })
 
@@ -28,11 +37,11 @@ const Birthyear = () => {
 
   const result = useQuery(ALL_AUTHORS)
   
-    if (result.loading) {
-      return <div>loading...</div>
-    }
+  if (result.loading) {
+    return <div>loading...</div>
+  }
   
-    const authors = result.data.allAuthors
+  const authors = result.data.allAuthors
 
   return (
     <div>
@@ -41,6 +50,7 @@ const Birthyear = () => {
         <div>
           name
           <select value={name} onChange={({ target }) => setName(target.value)}>
+            <option value="">Select an author</option>
             {authors.map((a) => (
               <option key={a.id} value={a.name}>
                 {a.name}

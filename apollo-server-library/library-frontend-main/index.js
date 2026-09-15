@@ -15,7 +15,7 @@ import User from './src/models/User.js'
 
 dotenv.config()
 
-const MONGODB_URI = process.env.MONGODB_URI
+const MONGODB_URI = process.env.MONGODB_URI //eslint-disable-line no-undef
 
 console.log('connecting to', MONGODB_URI)
 
@@ -114,7 +114,7 @@ const resolvers = {
       }
       return Book.find(filter)
     },
-    allAuthors: async () => Author.find({}),
+    allAuthors: async () => Author.find({}),  
     me: (root, args, context) => {
       return context.currentUser
     }
@@ -172,14 +172,24 @@ const resolvers = {
         })
       }
 
-      const author = await Author.findOne({ name: args.author })
+      const author = await Author.findOne({ name: args.name })
       if (!author) {
         return null
       }
 
-      const updatedAuthor = { ...author, born: args.setBornTo }
-      await Author.findByIdAndUpdate(author._id, updatedAuthor)
-      return updatedAuthor
+      author.born = args.setBornTo
+      try {
+        return await author.save()
+      } catch (error) {
+        console.log('error updating author:', error.message)
+        throw new GraphQLError('Updating author failed. Invalid birth year', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.setBornTo,
+            error
+          }
+        })
+      }
     },
     createUser: async (root, args) => {
       const user = new User({ ...args })
@@ -210,7 +220,7 @@ const resolvers = {
         id: user._id
       }
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) } //eslint-disable-line no-undef
     },
   }
 }
@@ -222,17 +232,21 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
-  context: async ({ req, res }) => {
+  context: async ({ req }) => {
     const auth = req ? req.headers.authorization : null
     if (auth && auth.startsWith('Bearer ')) {
-      const decodedToken = jwt.verify(
-        auth.substring(7), process.env.JWT_SECRET
-      )
-
-      const currentUser = await User
-        .findById(decodedToken.userForToken.id)
-      console.log('current user:', currentUser)
-      return { currentUser }
+      try {
+        const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET) //eslint-disable-line no-undef
+        const currentUser = await User.findById(decodedToken.id)
+        return { currentUser }
+      } catch (error) {
+        console.error('Error verifying token:', error)
+        throw new GraphQLError('Invalid token', {
+          extensions: {
+            code: 'UNAUTHENTICATED'
+          }
+        })
+      }
     }
   },
 }).then(({ url }) => {

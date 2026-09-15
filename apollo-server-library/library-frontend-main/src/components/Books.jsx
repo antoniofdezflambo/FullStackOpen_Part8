@@ -13,12 +13,11 @@ const Books = (props) => {
     return <div>loading...</div>
   }
   
-  console.log(result.data.allBooks)
   const books = result.data.allBooks
 
   return (
     <div>
-      <h2>books</h2>
+      <h2>Books</h2>
 
       <table>
         <tbody>

@@ -4,7 +4,6 @@ import { ALL_AUTHORS } from '../../queries'
 import Birthyear from './Birthyear'
 
 const Authors = (props) => {
-  
   const result = useQuery(ALL_AUTHORS)
   
   if (!props.show) {
@@ -19,7 +18,7 @@ const Authors = (props) => {
 
   return (
     <div>
-      <h2>authors</h2>
+      <h2>Authors</h2>
       <table>
         <tbody>
           <tr>
