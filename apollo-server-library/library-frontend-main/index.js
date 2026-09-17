@@ -57,6 +57,7 @@ const typeDefs = `
     bookCount: Int!
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
+    filterBooks(genre: String!): [Book!]!
     allAuthors: [Author!]!
     me: User
   }
@@ -101,7 +102,8 @@ const resolvers = {
   Query: {
     bookCount: async () => await Book.countDocuments(),
     authorCount: async () => await Author.countDocuments(),
-    allBooks: async (root, args) => {
+    allBooks: async () => await Book.find({}),
+    filterBooks: async (root, args) => {
       const filter = {}
       if (args.author) {
         const author = await Author.findOne({ name: args.author })
