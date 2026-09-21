@@ -105,8 +105,12 @@ const typeDefs = `
 
 const resolvers = {
   Author: {
-    bookCount: async (root) => {
-      return await Book.countDocuments({ author: root._id })
+    bookCount: (root) => {
+      if(root.books) {
+        return root.books.length
+      }
+
+      return Book.countDocuments({ author: root._id })
     }
   },
   Book: {
@@ -131,7 +135,9 @@ const resolvers = {
       }
       return Book.find(filter)
     },
-    allAuthors: async () => Author.find({}),  
+    allAuthors: async () => {
+      return Author.find({}).populate('books')
+    },  
     me: (root, args, context) => {
       return context.currentUser
     }
@@ -178,6 +184,9 @@ const resolvers = {
         })
       }
       
+      author.books = author.books.concat(book._id)
+      await author.save()
+
       await book.populate('author')
 
       pubsub.publish('ADD_BOOK', { bookAdded: book })
