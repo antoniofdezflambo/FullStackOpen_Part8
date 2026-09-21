@@ -9,13 +9,10 @@ const Books = (props) => {
 
   const [ genres, setGenres ] = useState([])
   const [ filter, setFilter ] = useState(null)
-  const [ books, setBooks ] = useState([])
 
   useEffect(() => {
     if (result.data) {
       const allGenres = result.data.allBooks.flatMap(book => book.genres)
-
-      setBooks(result.data.allBooks)
 
       setGenres([...new Set(allGenres)])
     }
@@ -24,16 +21,8 @@ const Books = (props) => {
   useEffect(() => {
     if(filter) {
       getFilteredBooks({ variables: { genreToSearch: filter } })
-    } else if(result.data?.allBooks){
-      setBooks(result.data.allBooks)
     }
   }, [filter, result.data, getFilteredBooks])
-
-  useEffect(() => {
-    if(filteredBooks.data) {
-      setBooks(filteredBooks.data.filterBooks)
-    }
-  }, [filteredBooks.data])
 
   if (!props.show) {
     return null
@@ -42,6 +31,8 @@ const Books = (props) => {
   if (result.loading) {
     return <div>loading...</div>
   }
+
+  const books = filter ? filteredBooks.data?.filterBooks || [] : result.data?.allBooks || []
   
   return (
     <div>

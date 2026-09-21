@@ -1,5 +1,13 @@
 import { ApolloServer } from '@apollo/server'
-import { startStandaloneServer } from '@apollo/server/standalone'
+
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
+import { expressMiddleware } from '@as-integrations/express5'
+import cors from 'cors'
+import express from 'express'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import http from 'http'
+import { WebSocketServer } from 'ws'
+import { useServer } from 'graphql-ws/use/ws'
 
 import { GraphQLError } from 'graphql'
 
@@ -12,6 +20,9 @@ mongoose.set('strictQuery', false)
 import Author from './src/models/author.js'
 import Book from './src/models/book.js'
 import User from './src/models/User.js'
+
+import { PubSub } from 'graphql-subscriptions'
+const pubsub = new PubSub()
 
 dotenv.config()
 
@@ -85,6 +96,10 @@ const typeDefs = `
       username: String!
       password: String!
     ): Token  
+  }
+
+  type Subscription {
+    bookAdded: Book!
   }
 `
 
@@ -162,6 +177,10 @@ const resolvers = {
           }
         })
       }
+      
+      await book.populate('author')
+
+      pubsub.publish('ADD_BOOK', { bookAdded: book })
 
       return book
     },
@@ -224,9 +243,15 @@ const resolvers = {
 
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) } //eslint-disable-line no-undef
     },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator(['ADD_BOOK'])
+    }
   }
 }
 
+/*
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -254,3 +279,79 @@ startStandaloneServer(server, {
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
+*/
+
+// INICIALIZAR SERVIDOR
+const getUserFromAuthHeader = async (auth) => {
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return null
+  }
+
+  try {
+    const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
+    return await User.findById(decodedToken.id)
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+const startServer = async (port) => {
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+
+  const wsServer = new WebSocketServer({
+    noServer: true,
+  })
+
+  const serverCleanup = useServer({ schema }, wsServer)
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url, `http://${request.headers.host}`).pathname
+    if(pathname === '/') {
+      wsServer.handleUpgrade(request, socket, head, (ws) => {
+        wsServer.emit('connection', ws, request)
+      })
+    } else {
+      socket.destroy()
+    }
+  })
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose()
+            }
+          }
+        }
+      }
+    ],    
+  })
+
+  await server.start()
+
+  app.use(
+    '/',
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const auth = req.headers.authorization
+        const currentUser = await getUserFromAuthHeader(auth)
+        return { currentUser }
+      },
+    }),
+  )
+  httpServer.listen(port, '0.0.0.0', () =>
+    console.log(`Server is now running on http://localhost:${port}`),
+  )
+}
+
+startServer(process.env.PORT || 4000)
