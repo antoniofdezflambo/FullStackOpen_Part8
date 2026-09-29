@@ -20,6 +20,8 @@ const Birthyear = () => {
   const submit = async (event) => {
     event.preventDefault()
 
+    console.log('updating author...')
+
     addBirthyear({ variables: { name, setBornTo: parseInt(born) } })
 
     setName('')
