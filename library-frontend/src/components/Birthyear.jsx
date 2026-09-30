@@ -53,7 +53,7 @@ const Birthyear = ({ setError }) => {
         <div>
           <label>
             name
-            <select value={name} onChange={({ target }) => setName(target.value)}>
+            <select value={name} onChange={({ target }) => setName(target.value)} name='name'>
               <option value="">Select an author</option>
             {authors.map((a) => (
               <option key={a.id} value={a.name}>

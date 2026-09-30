@@ -35,7 +35,7 @@ const App = () => {
         <button onClick={() => setPage("books")}>books</button>
         {!token && <button onClick={() => setPage("login")}>login</button>}
         {token && <button onClick={() => setPage("add")}>add book</button>}
-        {token && <button onClick={() => setPage("recommendations")}>recommendations</button>}
+        {token && <button onClick={() => setPage("recommend")}>recommend</button>}
         {token && <button onClick={logout}>logout</button>}
       </div>
 
@@ -49,7 +49,7 @@ const App = () => {
 
       <NewBook show={page === "add"} />
 
-      <Recommendations show={page === "recommendations"} />
+      <Recommendations show={page === "recommend"} />
 
       <LoginForm
         show={page === "login"}
