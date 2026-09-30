@@ -3,7 +3,7 @@ const { startStandaloneServer } = require("@apollo/server/standalone")
 const jwt = require('jsonwebtoken')
 
 const resolvers = require('./resolvers')
-const typeDefs = require('./typeDefs')
+const typeDefs = require('./schema')
 
 const User = require('./models/user')
 
