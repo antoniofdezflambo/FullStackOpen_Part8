@@ -32,7 +32,7 @@ const NewBook = ({ show, setError }) => {
 
     console.log('add book...')
 
-    createBook({ variables: { title, author, published: parseInt(published), genres } })
+    await createBook({ variables: { title, author, published: parseInt(published), genres } })
 
     setTitle('')
     setPublished('')
