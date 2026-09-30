@@ -21,7 +21,8 @@ const resolvers = {
   Query: {
     bookCount: async () => await Book.countDocuments(),
     authorCount: async () => await Author.countDocuments(),
-    allBooks: async (root, args) => {
+    allBooks: async () => await Book.find({}),
+    filterBooks: async (root, args) => {
       const filter = {}
 
       if (args.author) {
