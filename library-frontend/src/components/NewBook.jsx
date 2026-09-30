@@ -1,7 +1,9 @@
 import { useMutation } from '@apollo/client/react'
 import { useState } from 'react'
 
-import { ALL_BOOKS, ADD_BOOK } from '../queries'
+import { addBookToCache } from '../../utils/apolloCache'
+
+import { ADD_BOOK } from '../queries'
 
 const NewBook = ({ show, setError }) => {
   const [title, setTitle] = useState('')
@@ -16,28 +18,8 @@ const NewBook = ({ show, setError }) => {
       setError(error.message)
     },
     update: (cache, response) => {
-      const addedBook = response.data?.addBook
-      if (!addedBook) return
-
-      const updateBookCache = (variables) => {
-        cache.updateQuery({ query: ALL_BOOKS, variables }, (data) => {
-          if (!data) return data
-          // Evitar duplicados si la consulta ya lo incluyó
-          if (data.allBooks.some((b) => b.id === addedBook.id)) {
-            return data
-          }
-          return {
-            allBooks: data.allBooks.concat(addedBook),
-          }
-        })
-      }
-
-      updateBookCache()
-      updateBookCache({ genre: null })
-
-      addedBook.genres.forEach((genre) => {
-        updateBookCache({ genre })
-      })
+      const addedBook = response.data.addBook
+      addBookToCache(cache, addedBook)
     }
   })
 
