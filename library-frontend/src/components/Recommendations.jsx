@@ -8,7 +8,7 @@ const Recommendations = ({ show }) => {
   const me = user.data?.me
 
   const filteredBooks = useQuery(FILTER_BOOKS, {
-    variables: { genreToSearch: me.favoriteGenre },
+    variables: { genreToSearch: me?.favoriteGenre },
     skip: !me?.favoriteGenre
   })
   
