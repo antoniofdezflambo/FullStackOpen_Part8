@@ -57,6 +57,10 @@ const typeDefs = `
     ): Token
     _resetDatabase: Boolean
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 module.exports = typeDefs
