@@ -62,7 +62,7 @@ const resolvers = {
         try {
           await author.save()    
         } catch (error) {
-          throw new GraphQLError('Saving author failed. Name too short.', {
+          throw new GraphQLError('Saving author failed.', {
             extensions: {
               code: 'BAD_USER_INPUT',
               invalidArgs: args.author,
@@ -77,7 +77,7 @@ const resolvers = {
       try {
         await book.save()
       } catch (error) {
-        throw new GraphQLError('Saving book failed. Title too short.', {
+        throw new GraphQLError('Saving book failed.', {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.title,
@@ -106,8 +106,7 @@ const resolvers = {
       try {
         return await author.save()
       } catch (error) {
-        console.log('Error updating author:', error.message)
-        throw new GraphQLError('Updating author failed. Invalid birth year', {
+        throw new GraphQLError('Updating author failed.', {
           extensions: {
             code: 'BAD_USER_INPUT',
             invalidArgs: args.setBornTo,

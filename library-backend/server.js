@@ -26,8 +26,17 @@ const startServer = (port) => {
     listen: { port },
     context: async ({ req }) => {
       const auth = req ? req.headers.authorization : null
-      const currentUser = await getUserFromAuthHeader(auth)
-      return { currentUser }
+      try {
+        const currentUser = await getUserFromAuthHeader(auth)
+        return { currentUser }
+      } catch(error) {
+        console.error('Error verifying token:', error)
+        throw new GraphQLError('Invalid token', {
+          extensions: {
+            code: 'UNAUTHENTICATED'
+          }
+        })
+      }
     },
   }).then(({ url }) => {
     console.log(`Server ready at ${url}`)

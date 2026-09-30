@@ -3,17 +3,25 @@ import { useMutation, useQuery } from '@apollo/client/react'
 
 import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
 
-const Birthyear = () => {
-
+const Birthyear = ({ setError }) => {
   const [name, setName] = useState('')
   const [born, setBorn] = useState('')
 
+  const result = useQuery(ALL_AUTHORS)
+
   const [addBirthyear] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => {
-      const errors = error.graphQLErrors[0].extensions.error.errors
-      const messages = Object.values(errors).map(e => e.message).join('\n')
-      console.log(messages)
+      setError(error.message)
+    },
+    update: (cache, response) => {
+      cache.updateQuery({ query: ALL_AUTHORS }, ({ allAuthors }) => {
+        const updatedAuthor = response.data.editAuthor
+        return {
+          allAuthors: allAuthors.map(a =>
+            a.name === updatedAuthor.name ? updatedAuthor : a
+          )
+        }
+      })
     }
   })
 
@@ -22,14 +30,16 @@ const Birthyear = () => {
 
     console.log('updating author...')
 
-    addBirthyear({ variables: { name, setBornTo: parseInt(born) } })
+    try {
+      await addBirthyear({ variables: { name, setBornTo: parseInt(born) } })
 
-    setName('')
-    setBorn('')
+      setName('')
+      setBorn('')
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  const result = useQuery(ALL_AUTHORS)
-  
   if (result.loading) {
     return <div>loading...</div>
   }

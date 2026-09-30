@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import { ALL_AUTHORS, ALL_BOOKS, ADD_BOOK } from '../queries'
 
-const NewBook = (props) => {
+const NewBook = ({ show, setError }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [published, setPublished] = useState('')
@@ -13,13 +13,12 @@ const NewBook = (props) => {
   const [createBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_AUTHORS }, { query: ALL_BOOKS }],
     onError: (error) => {
-      const errors = error.graphQLErrors[0].extensions.error.errors
-      const messages = Object.values(errors).map(e => e.message).join('\n')
-      console.log(messages)
+      console.error(error.message)
+      setError(error.message)
     }
   })
 
-  if (!props.show) {
+  if (!show) {
     return null
   }
 
