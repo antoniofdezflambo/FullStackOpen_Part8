@@ -8,19 +8,24 @@ export const addBookToCache = (cache, bookToAdd) => {
     })
   }
 
-  cache.updateQuery({ query: ALL_BOOKS }, (data) => {
-    if (!data || !data.allBooks) return data
-    return {
-      allBooks: uniqById(data.allBooks.concat(bookToAdd)),
+  const update = (variables) => {
+    try {
+      cache.updateQuery({ query: ALL_BOOKS, variables }, (data) => {
+        if (!data?.allBooks) return data
+        return {
+          allBooks: uniqById(data.allBooks.concat(bookToAdd)),
+        }
+      })
+    } catch(error) {
+      console.error(error)  
     }
-  })
+  }
+
+  update()
+
+  update({ genre: null })
 
   bookToAdd.genres?.forEach((genre) => {
-    cache.updateQuery({ query: ALL_BOOKS, variables: { genre } }, (data) => {
-      if (!data || !data.allBooks) return data
-      return {
-        allBooks: uniqById(data.allBooks.concat(bookToAdd)),
-      }
-    })
+    update({ genre })
   })
 }
