@@ -28,7 +28,6 @@ const typeDefs = `
     bookCount: Int!
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
-    filterBooks(genre: String!): [Book!]!
     allAuthors: [Author!]!
     me: User
   }
