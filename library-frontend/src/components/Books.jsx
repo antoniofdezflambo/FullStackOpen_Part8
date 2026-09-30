@@ -47,6 +47,10 @@ const Books = (props) => {
     <div>
       <h2>books</h2>
 
+      <div>
+        <p>in genre <strong>{filter}</strong></p>
+      </div>
+
       <table>
         <tbody>
           <tr>

@@ -73,13 +73,15 @@ const NewBook = ({ show, setError }) => {
           </label>
         </div>
         <div>
-          <input
-            value={genre}
-            onChange={({ target }) => setGenre(target.value)}
-          />
-          <button onClick={addGenre} type="button">
-            add genre
-          </button>
+          <label title='genre'>
+            <input
+              value={genre}
+              onChange={({ target }) => setGenre(target.value)}
+            />
+            <button onClick={addGenre} type="button">
+              add genre
+            </button>
+          </label>
         </div>
         <div>
           <label>
